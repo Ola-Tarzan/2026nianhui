@@ -3,84 +3,458 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年会抽奖 · 管理员控制台</title>
+    <title>2026年会 · 轮盘抽奖台</title>
     <style>
-        /* ... 保持原有的所有样式 ... */
-        /* 为了节省空间，这里省略样式部分，请保留你原来的所有样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0b0716, #1c1230);
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 动态背景光效 */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(155, 89, 182, 0.1) 0%, transparent 50%);
+            animation: rotate 30s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .admin-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(20, 15, 30, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 50px;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.3);
+            padding: 20px 30px;
+            border-radius: 60px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .header-bar h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #ffd966, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-pill {
+            background: rgba(255, 215, 0, 0.15);
+            border: 2px solid #ffd700;
+            border-radius: 60px;
+            padding: 15px 35px;
+            color: #ffd966;
+            font-size: 1.5rem;
+            font-weight: 600;
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+
+        /* 实时状态条 */
+        .status-bar {
+            background: rgba(0,0,0,0.3);
+            border-radius: 40px;
+            padding: 15px 25px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ffd7b3;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .status-value {
+            color: #ffd966;
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
+        /* 轮盘主视觉区 */
+        .roulette-main {
+            background: linear-gradient(145deg, #1a1035, #2d1b4a);
+            border-radius: 60px;
+            padding: 40px 30px;
+            margin-bottom: 30px;
+            border: 3px solid #ffd700;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(255,215,0,0.2);
+        }
+
+        .roulette-main::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .roulette-title {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .roulette-title span {
+            background: linear-gradient(135deg, #ffd966, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* 轮盘数字显示 */
+        .wheel-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 40px 0;
+            position: relative;
+            z-index: 2;
+            flex-wrap: wrap;
+        }
+
+        .wheel-number {
+            width: 150px;
+            height: 150px;
+            background: rgba(0,0,0,0.6);
+            border: 4px solid #ffd700;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            font-weight: 800;
+            color: #ffd966;
+            text-shadow: 0 0 30px #ffd700;
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+            transition: all 0.1s;
+        }
+
+        .wheel-number.spinning {
+            animation: spinWheel 0.1s linear infinite;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 80px #ff6b6b;
+        }
+
+        @keyframes spinWheel {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(3deg) scale(1.05); }
+            75% { transform: rotate(-3deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
+        /* 轮盘控制按钮 */
+        .wheel-controls {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-roulette {
+            border: none;
+            padding: 20px 50px;
+            border-radius: 60px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .btn-spin {
+            background: linear-gradient(145deg, #ffd700, #ffb347);
+            color: #1a0f1e;
+        }
+
+        .btn-spin:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px #ffd700;
+        }
+
+        .btn-stop {
+            background: linear-gradient(145deg, #ff6b6b, #ff4757);
+            color: white;
+        }
+
+        .btn-stop:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px #ff6b6b;
+        }
+
+        .btn-stop:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 号码池区域 */
+        .pool-section {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 40px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .pool-header {
+            display: flex;
+            justify-content: space-between;
+            color: #ffd7b3;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .number-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 5px 0;
+        }
+
+        .number-chip {
+            background: #2a1e36;
+            border: 2px solid #ffd70080;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffd966;
+            transition: all 0.2s;
+        }
+
+        .number-chip.winner-highlight {
+            animation: winnerGlow 1s ease infinite;
+            background: linear-gradient(145deg, #ffd700, #ffb347);
+            color: #1a0f1e;
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        @keyframes winnerGlow {
+            0% { box-shadow: 0 0 20px #ffd700; }
+            50% { box-shadow: 0 0 60px #ffd700, 0 0 100px #ffb347; }
+            100% { box-shadow: 0 0 20px #ffd700; }
+        }
+
+        /* 中奖结果显示 */
+        .result-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 40px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .last-winner {
+            font-size: 1.5rem;
+            color: #ffd7b3;
+            margin-bottom: 10px;
+        }
+
+        .winner-number {
+            font-size: 6rem;
+            font-weight: 800;
+            color: #ffd700;
+            text-shadow: 0 0 50px #ffd700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .winner-number.celebrate {
+            animation: celebrate 0.5s ease infinite;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); text-shadow: 0 0 100px #ffd700; }
+            100% { transform: scale(1); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-glass {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,215,0,0.5);
+            color: #ffd7b3;
+        }
+
+        .btn-glass:hover {
+            background: rgba(255,215,0,0.15);
+        }
+
+        .btn-danger {
+            background: rgba(255, 80, 80, 0.2);
+            border: 1px solid #ff8888;
+            color: #ffb3b3;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 70, 70, 0.35);
+        }
+
+        /* 全屏通知 */
+        .toast-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #ffd700, #ffb347);
+            color: #1a0f1e;
+            padding: 40px 80px;
+            border-radius: 80px;
+            font-size: 4rem;
+            font-weight: 800;
+            z-index: 9999;
+            animation: toastIn 0.5s ease, toastOut 0.5s ease 2.5s;
+            box-shadow: 0 0 150px #ffd700;
+            border: 6px solid white;
+            white-space: nowrap;
+        }
+
+        @keyframes toastIn {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            80% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        @keyframes toastOut {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        }
     </style>
 </head>
 <body>
     <div class="admin-wrap">
         <div class="header-bar">
-            <h1>⚙️ 2026 年会抽奖台</h1>
+            <h1>🎰 2026 年会 · 轮盘抽奖台</h1>
             <div class="stats-pill" id="poolStats">0 / 78</div>
         </div>
 
-        <!-- 实时状态显示 -->
-        <div style="background: rgba(0,0,0,0.3); border-radius: 20px; padding: 10px 20px; margin-bottom: 20px; color: #ffd966; display: flex; gap: 20px; flex-wrap: wrap;">
-            <div>🔄 存储键名: <span style="color:#fff;">2026nianhui_raffle</span></div>
-            <div>👥 员工已取号: <span id="employeeCount">0</span></div>
-            <div>⏰ 最后更新: <span id="lastUpdate">刚刚</span></div>
+        <!-- 实时状态 -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span>👥 已取号员工</span>
+                <span class="status-value" id="employeeCount">0</span>
+            </div>
+            <div class="status-item">
+                <span>🎯 剩余号码</span>
+                <span class="status-value" id="poolSize">0</span>
+            </div>
+            <div class="status-item">
+                <span>⏱️ 最后更新</span>
+                <span class="status-value" id="lastUpdate">--:--:--</span>
+            </div>
         </div>
 
-        <!-- 轮盘抽奖区 -->
-        <div class="roulette-section">
+        <!-- 轮盘主视觉 -->
+        <div class="roulette-main">
             <div class="roulette-title">
-                🎰 <span>幸运大轮盘</span> 🎰
+                <span>✨ 转动你的幸运轮盘 ✨</span>
             </div>
             
-            <div class="roulette-wheel">
+            <!-- 三个轮盘数字 -->
+            <div class="wheel-container">
                 <div class="wheel-number" id="wheelNumber1">?</div>
                 <div class="wheel-number" id="wheelNumber2">?</div>
                 <div class="wheel-number" id="wheelNumber3">?</div>
             </div>
 
+            <!-- 控制按钮 -->
             <div class="wheel-controls">
-                <button class="btn-roulette" id="rouletteDrawBtn">
-                    <span>🎲</span> 转动轮盘
+                <button class="btn-roulette btn-spin" id="spinBtn">
+                    <span>🎲</span> 开始旋转
                 </button>
-                <button class="btn-roulette" id="rouletteStopBtn">
-                    <span>⏹️</span> 停止
+                <button class="btn-roulette btn-stop" id="stopBtn" disabled>
+                    <span>⏹️</span> 停止抽奖
                 </button>
             </div>
         </div>
 
-        <div class="pool-container">
+        <!-- 号码池 -->
+        <div class="pool-section">
             <div class="pool-header">
                 <span>📋 当前号码池</span>
-                <span>总数 <span id="poolSize">0</span></span>
+                <span>共 <span id="totalNumbers">0</span> 个号码</span>
             </div>
-            <div class="number-grid" id="poolGrid"></div>
+            <div class="number-grid" id="poolGrid">
+                <!-- 动态显示号码 -->
+            </div>
         </div>
 
-        <!-- 调试信息 -->
-        <div style="background: #2a1e36; border-radius: 20px; padding: 15px; margin-bottom: 20px; font-size: 0.9rem; color: #b7a4d4;">
-            <div>🔧 调试信息：</div>
-            <div id="debugInfo">等待数据加载...</div>
-        </div>
-
-        <div class="batch-section">
-            <h2>🎰 批量抽奖</h2>
-            <div class="batch-controls">
-                <label>抽取数量</label>
-                <input type="number" id="batchCount" min="1" max="78" value="3">
-                <button class="btn-batch" id="batchDrawBtn">✨ 一次抽取多个</button>
-                <button class="btn btn-glass" id="clearBatchBtn">清除结果</button>
-            </div>
-            <div class="batch-results" id="batchResults"></div>
-        </div>
-
-        <div class="results-panel">
-            <div class="last-draw">
-                <div class="label">🏆 最近中奖号码</div>
-                <div class="number" id="lastDrawDisplay">——</div>
-            </div>
-
+        <!-- 中奖结果 -->
+        <div class="result-section">
+            <div class="last-winner">🏆 本轮中奖号码</div>
+            <div class="winner-number" id="winnerDisplay">——</div>
             <div class="action-buttons">
-                <button class="btn btn-gold" id="drawOneBtn">🎲 抽一个</button>
-                <button class="btn btn-glass" id="resetDrawBtn">🔄 重置显示</button>
-                <button class="btn btn-danger" id="clearAllBtn">🗑️ 清空全部</button>
-                <button class="btn btn-glass" id="forceRefreshBtn">🔄 强制刷新</button>
+                <button class="btn btn-glass" id="resetBtn">🔄 重置显示</button>
+                <button class="btn btn-danger" id="clearAllBtn">🗑️ 清空号码池</button>
             </div>
         </div>
     </div>
@@ -88,194 +462,181 @@
     <script>
         (function() {
             const MAX_EMPLOYEES = 78;
-            // ✅ 统一使用这个存储键名（和员工页面完全一样）
-            const STORAGE_KEY = '2026nianhui_raffle';  
+            const STORAGE_KEY = '2026nianhui_raffle';  // 和员工页面一致
 
             let employees = {};
             let numberPool = new Set();
-            let lastDraw = null;
+            let lastWinner = null;
             let spinningInterval = null;
             let isSpinning = false;
-            let currentWheelNumbers = ['?', '?', '?'];
+            let currentNumbers = ['?', '?', '?'];
 
-            // 从localStorage加载数据
+            // 加载数据
             function loadData() {
                 try {
                     const saved = localStorage.getItem(STORAGE_KEY);
-                    console.log('管理员页面读取数据:', saved);
-                    
-                    // 更新调试信息
-                    document.getElementById('debugInfo').innerHTML = `
-                        原始数据: ${saved ? saved.substring(0, 100) + '...' : '无'}<br>
-                        数据类型: ${saved ? typeof saved : 'null'}<br>
-                        数据长度: ${saved ? saved.length : 0}
-                    `;
-                    
                     if (saved) {
                         const data = JSON.parse(saved);
-                        console.log('解析后的数据:', data);
-                        
                         employees = data.employees || {};
                         numberPool = new Set((data.numberPool || []).map(n => Number(n)));
-                        lastDraw = data.lastDraw ? Number(data.lastDraw) : null;
+                        lastWinner = data.lastDraw ? Number(data.lastDraw) : null;
                         
                         // 更新员工数量
                         document.getElementById('employeeCount').innerText = Object.keys(employees).length;
                     } else {
-                        console.log('没有找到存储数据');
                         employees = {};
                         numberPool = new Set();
-                        lastDraw = null;
+                        lastWinner = null;
                         document.getElementById('employeeCount').innerText = '0';
                     }
                 } catch (e) {
                     console.error('加载数据出错:', e);
-                    document.getElementById('debugInfo').innerHTML = `错误: ${e.message}`;
                     employees = {};
                     numberPool = new Set();
-                    lastDraw = null;
+                    lastWinner = null;
                 }
                 
                 refreshUI();
             }
 
-            // 保存数据到localStorage
+            // 保存数据
             function saveData() {
                 try {
                     const dataToSave = {
                         employees: employees,
                         numberPool: Array.from(numberPool),
-                        lastDraw: lastDraw
+                        lastDraw: lastWinner
                     };
-                    console.log('管理员页面保存数据:', dataToSave);
-                    
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
                     
-                    // 更新最后更新时间
+                    // 更新时间
                     document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString();
-                    
                 } catch (e) {
                     console.error('保存数据出错:', e);
                 }
             }
 
-            // 强制刷新数据
-            function forceRefresh() {
-                loadData();
-                refreshUI();
-                alert('数据已刷新！');
+            // 显示全屏通知
+            function showToast(number) {
+                const toast = document.createElement('div');
+                toast.className = 'toast-message';
+                toast.textContent = `🎉 ${number} 🎉`;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
             }
 
-            // 开始轮盘旋转
-            function startRouletteSpin() {
+            // 高亮中奖号码
+            function highlightWinner(number) {
+                const chips = document.querySelectorAll('.number-chip');
+                chips.forEach(chip => {
+                    chip.classList.remove('winner-highlight');
+                    if (chip.textContent == number) {
+                        chip.classList.add('winner-highlight');
+                        chip.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            }
+
+            // 开始旋转
+            function startSpin() {
                 if (numberPool.size === 0) {
-                    alert('号码池为空，无法抽奖');
-                    return false;
+                    alert('号码池为空，请等待员工取号！');
+                    return;
                 }
 
                 isSpinning = true;
-                const wheelNumbers = [
+                document.getElementById('spinBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+
+                const wheels = [
                     document.getElementById('wheelNumber1'),
                     document.getElementById('wheelNumber2'),
                     document.getElementById('wheelNumber3')
                 ];
 
-                wheelNumbers.forEach(num => num.classList.add('spinning'));
+                wheels.forEach(w => w.classList.add('spinning'));
 
                 spinningInterval = setInterval(() => {
                     const poolArray = Array.from(numberPool);
                     if (poolArray.length > 0) {
-                        currentWheelNumbers = [
+                        currentNumbers = [
                             poolArray[Math.floor(Math.random() * poolArray.length)],
                             poolArray[Math.floor(Math.random() * poolArray.length)],
                             poolArray[Math.floor(Math.random() * poolArray.length)]
                         ];
-                        wheelNumbers.forEach((num, index) => {
-                            num.textContent = currentWheelNumbers[index];
+                        wheels.forEach((wheel, index) => {
+                            wheel.textContent = currentNumbers[index];
                         });
                     }
                 }, 100);
-
-                return true;
             }
 
-            // 停止轮盘并抽奖
-            function stopRouletteAndDraw() {
+            // 停止并抽奖
+            function stopAndDraw() {
                 if (!isSpinning) return;
 
                 clearInterval(spinningInterval);
                 isSpinning = false;
 
-                const wheelNumbers = [
+                const wheels = [
                     document.getElementById('wheelNumber1'),
                     document.getElementById('wheelNumber2'),
                     document.getElementById('wheelNumber3')
                 ];
 
-                wheelNumbers.forEach(num => num.classList.remove('spinning'));
+                wheels.forEach(w => w.classList.remove('spinning'));
 
-                const finalNumber = currentWheelNumbers[Math.floor(Math.random() * currentWheelNumbers.length)];
+                // 随机选一个作为最终中奖号码
+                const winner = currentNumbers[Math.floor(Math.random() * currentNumbers.length)];
                 
-                if (numberPool.has(finalNumber)) {
-                    numberPool.delete(finalNumber);
-                    lastDraw = finalNumber;
+                if (numberPool.has(winner)) {
+                    // 从池中移除
+                    numberPool.delete(winner);
+                    lastWinner = winner;
                     saveData();
                     
-                    // 刷新UI
+                    // 显示特效
+                    showToast(winner);
+                    highlightWinner(winner);
+                    
+                    // 更新中奖显示
+                    const winnerDisplay = document.getElementById('winnerDisplay');
+                    winnerDisplay.textContent = winner;
+                    winnerDisplay.classList.add('celebrate');
+                    setTimeout(() => {
+                        winnerDisplay.classList.remove('celebrate');
+                    }, 2000);
+                    
                     refreshUI();
                 } else {
-                    alert('这个号码刚刚被抽走了，重新转动吧！');
+                    alert('这个号码刚刚被抽走了，重新旋转吧！');
                 }
+
+                // 恢复按钮状态
+                document.getElementById('spinBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
             }
 
-            function drawSingle() {
-                if (numberPool.size === 0) {
-                    alert('号码池为空');
-                    return false;
-                }
-                const arr = Array.from(numberPool);
-                const rand = arr[Math.floor(Math.random() * arr.length)];
-                numberPool.delete(rand);
-                lastDraw = rand;
+            // 重置显示
+            function resetDisplay() {
+                lastWinner = null;
+                document.getElementById('winnerDisplay').textContent = '——';
                 saveData();
-                refreshUI();
-                return true;
             }
 
-            function drawBatch(count) {
-                if (numberPool.size === 0) return [];
-                if (count > numberPool.size) {
-                    if (!confirm(`池中只有 ${numberPool.size} 个号码，是否全部抽出？`)) return [];
-                    count = numberPool.size;
-                }
-                const arr = Array.from(numberPool);
-                for (let i = arr.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [arr[i], arr[j]] = [arr[j], arr[i]];
-                }
-                const drawn = arr.slice(0, count);
-                drawn.forEach(n => numberPool.delete(n));
-                if (drawn.length > 0) lastDraw = drawn[drawn.length - 1];
-                saveData();
-                return drawn;
-            }
-
-            function resetLastDraw() {
-                lastDraw = null;
-                saveData();
-                refreshUI();
-            }
-
+            // 清空所有
             function clearAll() {
-                if (!confirm('⚠️ 确定清空所有员工号码吗？此操作不可撤销。')) return;
+                if (!confirm('⚠️ 确定清空所有员工号码吗？此操作不可撤销！')) return;
+                
                 employees = {};
                 numberPool.clear();
-                lastDraw = null;
-                sessionStorage.removeItem('lastEmpKey');
+                lastWinner = null;
                 saveData();
-                refreshUI();
-                document.getElementById('batchResults').innerHTML = '';
                 
+                // 重置轮盘
                 if (spinningInterval) {
                     clearInterval(spinningInterval);
                     isSpinning = false;
@@ -283,71 +644,46 @@
                 document.getElementById('wheelNumber1').textContent = '?';
                 document.getElementById('wheelNumber2').textContent = '?';
                 document.getElementById('wheelNumber3').textContent = '?';
+                document.getElementById('spinBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                
+                refreshUI();
             }
 
+            // 刷新UI
             function refreshUI() {
-                document.getElementById('poolSize').innerText = numberPool.size;
-                document.getElementById('poolStats').innerText = `${numberPool.size} / ${MAX_EMPLOYEES}`;
+                const size = numberPool.size;
+                document.getElementById('poolSize').innerText = size;
+                document.getElementById('totalNumbers').innerText = size;
+                document.getElementById('poolStats').innerText = `${size} / ${MAX_EMPLOYEES}`;
 
+                // 更新号码池网格
                 const poolGrid = document.getElementById('poolGrid');
-                const sorted = Array.from(numberPool).sort((a,b)=>a-b);
-                if (sorted.length) {
+                const sorted = Array.from(numberPool).sort((a,b) => a-b);
+                
+                if (sorted.length > 0) {
                     poolGrid.innerHTML = sorted.map(n => `<span class="number-chip">${n}</span>`).join('');
                 } else {
-                    poolGrid.innerHTML = '<span style="color:#8f7aa8;">✨ 暂无号码</span>';
+                    poolGrid.innerHTML = '<span style="color:#8f7aa8; padding: 20px;">✨ 暂无号码，员工取号后显示</span>';
                 }
 
-                document.getElementById('lastDrawDisplay').innerText = lastDraw !== null ? lastDraw : '——';
+                // 更新中奖显示
+                document.getElementById('winnerDisplay').textContent = lastWinner !== null ? lastWinner : '——';
             }
 
-            // 每秒检查一次数据变化
+            // 自动刷新数据
             setInterval(() => {
                 loadData();
-            }, 1000);
+            }, 2000);
 
+            // 页面初始化
             window.addEventListener('DOMContentLoaded', () => {
                 loadData();
 
-                const drawOne = document.getElementById('drawOneBtn');
-                const resetDraw = document.getElementById('resetDrawBtn');
-                const clearAllBtn = document.getElementById('clearAllBtn');
-                const batchDrawBtn = document.getElementById('batchDrawBtn');
-                const batchCount = document.getElementById('batchCount');
-                const batchResults = document.getElementById('batchResults');
-                const clearBatch = document.getElementById('clearBatchBtn');
-                const rouletteDrawBtn = document.getElementById('rouletteDrawBtn');
-                const rouletteStopBtn = document.getElementById('rouletteStopBtn');
-                const forceRefreshBtn = document.getElementById('forceRefreshBtn');
-
-                drawOne.addEventListener('click', drawSingle);
-                resetDraw.addEventListener('click', resetLastDraw);
-                clearAllBtn.addEventListener('click', clearAll);
-                forceRefreshBtn.addEventListener('click', forceRefresh);
-
-                rouletteDrawBtn.addEventListener('click', startRouletteSpin);
-                rouletteStopBtn.addEventListener('click', stopRouletteAndDraw);
-
-                batchDrawBtn.addEventListener('click', () => {
-                    let count = parseInt(batchCount.value, 10);
-                    if (isNaN(count) || count < 1) count = 1;
-                    const drawn = drawBatch(count);
-                    if (drawn.length) {
-                        batchResults.innerHTML = drawn.map(n => `<span class="winner-badge">🎉 ${n}</span>`).join('');
-                    } else {
-                        batchResults.innerHTML = '';
-                    }
-                    refreshUI();
-                });
-
-                clearBatch.addEventListener('click', () => {
-                    batchResults.innerHTML = '';
-                });
-
-                batchCount.addEventListener('change', function() {
-                    let v = parseInt(this.value, 10);
-                    if (isNaN(v) || v < 1) this.value = 1;
-                    else if (v > MAX_EMPLOYEES) this.value = MAX_EMPLOYEES;
-                });
+                document.getElementById('spinBtn').addEventListener('click', startSpin);
+                document.getElementById('stopBtn').addEventListener('click', stopAndDraw);
+                document.getElementById('resetBtn').addEventListener('click', resetDisplay);
+                document.getElementById('clearAllBtn').addEventListener('click', clearAll);
             });
         })();
     </script>
