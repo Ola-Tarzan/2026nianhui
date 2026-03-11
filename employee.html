@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>2026年会抽号 · 员工通道</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a1035 0%, #2d1b4a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .phone-container {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.25);
+            border-radius: 48px;
+            padding: 30px 22px;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-area h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #ffd966, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .logo-area p {
+            color: #c7b0e6;
+            font-size: 1rem;
+        }
+
+        .input-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 36px;
+            padding: 25px 18px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            color: #ffd7b3;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            margin-left: 8px;
+        }
+
+        .field input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            border-radius: 40px;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            color: white;
+            outline: none;
+        }
+
+        .field input:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin: 30px 0 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 10px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(145deg, #ffd700, #ffb347);
+            color: #1a0f1e;
+            box-shadow: 0 8px 20px #ffb34780;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            color: #ffd7b3;
+        }
+
+        .btn-secondary:active {
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .number-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 40px;
+            padding: 20px;
+            border: 2px dashed #ffd70080;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .number-label {
+            color: #c7b0e6;
+            font-size: 1.1rem;
+        }
+
+        .number-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #ffd966;
+            text-shadow: 0 0 30px #ffd700;
+            line-height: 1;
+        }
+
+        .info-text {
+            color: #9a85b3;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 25px;
+            background: rgba(255,255,255,0.03);
+            padding: 16px;
+            border-radius: 30px;
+        }
+
+        .info-text strong {
+            color: #ffd966;
+        }
+
+        /* 隐藏任何可能的链接 */
+        .hidden-link {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="logo-area">
+            <h1>🌟 2026 年会</h1>
+            <p>员工专属 · 登录取号</p>
+        </div>
+
+        <div class="input-card">
+            <div class="field">
+                <label>✨ 你的姓名</label>
+                <input type="text" id="empName" placeholder="例: 张丽" autocomplete="off">
+            </div>
+            <div class="field">
+                <label>🔑 工号 / 手机后四位</label>
+                <input type="text" id="empId" placeholder="例: 8866" autocomplete="off">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" id="drawNumberBtn">🎲 抽取号码</button>
+                <button class="btn btn-secondary" id="checkMyNumberBtn">🔍 查看我的号码</button>
+            </div>
+
+            <div class="number-display">
+                <span class="number-label">🎯 你的号码</span>
+                <span class="number-value" id="displayMyNumber">——</span>
+            </div>
+        </div>
+
+        <div class="info-text">
+            <strong>⏳ 每人仅限一号</strong> · 已抽取的员工再次进入会显示原号码<br>
+            共78个名额，先到先得
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const MAX_EMPLOYEES = 78;
+            const STORAGE_KEY = 'raffle_2026_gala';
+
+            let employees = {};
+            let numberPool = new Set();
+
+            function loadData() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        employees = data.employees || {};
+                        numberPool = new Set((data.numberPool || []).map(n => Number(n)));
+                    }
+                } catch (e) {
+                    employees = {};
+                    numberPool = new Set();
+                }
+            }
+
+            function saveData() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        employees: employees,
+                        numberPool: Array.from(numberPool),
+                        lastDraw: null
+                    }));
+                } catch (e) {}
+            }
+
+            function generateAvailableNumber() {
+                const existing = new Set(Object.values(employees).map(v => Number(v)));
+                for (let i = 1; i <= MAX_EMPLOYEES; i++) {
+                    if (!existing.has(i)) return i;
+                }
+                return null;
+            }
+
+            function acquireNumber(empId, empName) {
+                const id = empId.toString().trim();
+                const name = empName.toString().trim();
+                if (!id || !name) {
+                    alert('请填写姓名和工号');
+                    return null;
+                }
+                const key = `${id}|${name}`;
+
+                if (employees[key] !== undefined) {
+                    const num = employees[key];
+                    if (!numberPool.has(num)) numberPool.add(num);
+                    sessionStorage.setItem('lastEmpKey', key);
+                    saveData();
+                    return num;
+                }
+
+                if (Object.keys(employees).length >= MAX_EMPLOYEES) {
+                    alert(`号码池已满（最多${MAX_EMPLOYEES}人）`);
+                    return null;
+                }
+
+                const newNum = generateAvailableNumber();
+                if (!newNum) {
+                    alert('系统繁忙，请稍后重试');
+                    return null;
+                }
+
+                employees[key] = newNum;
+                numberPool.add(newNum);
+                sessionStorage.setItem('lastEmpKey', key);
+                saveData();
+                return newNum;
+            }
+
+            function peekNumber(empId, empName) {
+                const id = empId.toString().trim();
+                const name = empName.toString().trim();
+                if (!id || !name) return null;
+                const key = `${id}|${name}`;
+                return employees[key] !== undefined ? employees[key] : null;
+            }
+
+            function refreshDisplay() {
+                const lastKey = sessionStorage.getItem('lastEmpKey');
+                const displaySpan = document.getElementById('displayMyNumber');
+                if (lastKey && employees[lastKey]) {
+                    displaySpan.innerText = employees[lastKey];
+                } else {
+                    displaySpan.innerText = '——';
+                }
+            }
+
+            window.addEventListener('DOMContentLoaded', () => {
+                loadData();
+                refreshDisplay();
+
+                const empName = document.getElementById('empName');
+                const empId = document.getElementById('empId');
+                const drawBtn = document.getElementById('drawNumberBtn');
+                const checkBtn = document.getElementById('checkMyNumberBtn');
+
+                drawBtn.addEventListener('click', () => {
+                    const num = acquireNumber(empId.value, empName.value);
+                    if (num) {
+                        document.getElementById('displayMyNumber').innerText = num;
+                        refreshDisplay();
+                    }
+                });
+
+                checkBtn.addEventListener('click', () => {
+                    const num = peekNumber(empId.value, empName.value);
+                    if (num) {
+                        document.getElementById('displayMyNumber').innerText = num;
+                        sessionStorage.setItem('lastEmpKey', `${empId.value.trim()}|${empName.value.trim()}`);
+                    } else {
+                        alert('您还没有抽取号码，请先抽取');
+                        document.getElementById('displayMyNumber').innerText = '——';
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
